@@ -3,9 +3,13 @@ import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import styles from './styles';
 
-export default function LoginScreen(props) {
+export default function LoginScreen({navigation}) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+
+    const onFooterLinkPress = () => {
+        navigation.navigate('Registration')
+    }
 
     return (
         <View style={styles.container}>
@@ -40,6 +44,9 @@ export default function LoginScreen(props) {
                     onPress={() => onLoginPress()}>
                     <Text style={styles.buttonTitle}>Log in</Text>
                 </TouchableOpacity>
+                <View style={styles.footerView}>
+                    <Text style={styles.footerText}>Don't have an account? <Text onPress={onFooterLinkPress} style={styles.footerLink}>Sign up</Text></Text>
+                </View>
             </KeyboardAwareScrollView>
         </View>
     )
