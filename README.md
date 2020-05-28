@@ -4,7 +4,7 @@ This is a React Native Firebase Starter Project with login, registration, persis
 
 <center><img src="https://www.instamobile.io/wp-content/uploads/2020/05/react-native-firebase.png" alt="react native firebase"/></center>
 
-This React Native Firebase starter contains a few key features that all apps backend by Fireabase support:
+This React Native Firebase starter contains a few key features that all apps backed by Fireabase support:
 
 * Registration with E-mail & Password
 * Login with E-mail and Password
