@@ -44,6 +44,10 @@ export default StyleSheet.create({
         padding: 20,
     },
     entityContainer: {
+        marginTop: 16,
+        borderBottomColor: '#cccccc',
+        borderBottomWidth: 1,
+        paddingBottom: 16
     },
     entityText: {
         fontSize: 20,
