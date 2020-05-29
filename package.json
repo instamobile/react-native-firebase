@@ -12,7 +12,7 @@
     "@react-navigation/native": "^5.4.0",
     "@react-navigation/stack": "^5.3.7",
     "base-64": "^0.1.0",
-    "expo": "~37.0.3",
+    "expo": "^37.0.12",
     "firebase": "^7.14.4",
     "react": "~16.9.0",
     "react-dom": "~16.9.0",
