@@ -8,24 +8,25 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@expo/ngrok": "^4.1.0",
     "@react-native-community/masked-view": "0.1.6",
-    "@react-navigation/native": "^5.4.0",
-    "@react-navigation/stack": "^5.3.7",
+    "@react-navigation/native": "^6.0.4",
+    "@react-navigation/stack":"^6.0.9",
     "base-64": "^0.1.0",
-    "expo": "^37.0.12",
-    "firebase": "^7.14.4",
-    "react": "~16.9.0",
-    "react-dom": "~16.9.0",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-37.0.1.tar.gz",
-    "react-native-gesture-handler": "~1.6.0",
+    "expo": "~42.0.1",
+    "firebase": "8.2.3",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-42.0.0.tar.gz",
+    "react-native-gesture-handler": "^1.10.3",
     "react-native-keyboard-aware-scroll-view": "^0.9.1",
     "react-native-reanimated": "~1.7.0",
-    "react-native-safe-area-context": "0.7.3",
-    "react-native-screens": "~2.2.0",
-    "react-native-web": "~0.11.7"
+    "react-native-safe-area-context":  "3.2.0",
+    "react-native-screens": "^3.8.0",
+		"react-native-web": "~0.13.12"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.6",
+    "@babel/core": "^7.9.0",
     "babel-preset-expo": "~8.1.0"
   },
   "private": true
