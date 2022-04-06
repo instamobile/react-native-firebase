@@ -21,6 +21,7 @@ If you are using Expo Cli, clone the repo and run "expo start" in the root folde
 ```
 git clone https://github.com/instamobile/react-native-firebase.git
 cd react-native-firebase
+npm install
 expo start
 ```
 
