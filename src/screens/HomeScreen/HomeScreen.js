@@ -12,8 +12,8 @@ export default function HomeScreen(props) {
     const userID = props.extraData.id
 
     useEffect(() => {
-        entityRef
-            .where("authorID", "==", userID)
+        const subscriber = entityRef
+            .where("authorID", "==", userID) // BUG: `.where` is not working
             .orderBy('createdAt', 'desc')
             .onSnapshot(
                 querySnapshot => {
@@ -29,7 +29,10 @@ export default function HomeScreen(props) {
                     console.log(error)
                 }
             )
-    }, [])
+        
+            // Stop listening for updates when no longer required
+            return () => subscriber();
+    }, [userID])
 
     const onAddButtonPress = () => {
         if (entityText && entityText.length > 0) {
@@ -42,6 +45,7 @@ export default function HomeScreen(props) {
             entityRef
                 .add(data)
                 .then(_doc => {
+                    setEntities([...entities, {...data, id: _doc.id}])
                     setEntityText('')
                     Keyboard.dismiss()
                 })
