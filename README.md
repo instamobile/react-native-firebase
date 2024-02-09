@@ -1,3 +1,5 @@
+# Updated to ModularSDK
+As it was outdated and used the Firebase namespace SDK I took the time and converted it to Firebase Modular SDK
 # React Native Firebase
 
 This is a React Native Firebase Starter Project with login, registration, persisted login, database reads and writes. You can use this project as boilerplate for bootstrapping any new React Native app that uses Firebase as its backend.
