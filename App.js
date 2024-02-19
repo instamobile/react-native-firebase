@@ -20,6 +20,9 @@ export default function App() {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
+
+    console.log('CURRENTUSER', user)
+
     const usersRef = collection(db, 'users');
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -54,7 +57,7 @@ export default function App() {
         { user ? (
           <Stack.Screen name="Home">
             {props => <HomeScreen {...props} extraData={user} />}
-          </Stack.Screen>
+            </Stack.Screen>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
@@ -65,3 +68,4 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
