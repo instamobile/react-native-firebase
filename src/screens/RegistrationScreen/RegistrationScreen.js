@@ -2,64 +2,47 @@ import React, { useState } from 'react';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import styles from './styles';
-// Import Firebase authentication and Firestore modules
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore"; 
+import { auth, db } from '../../firebase/config';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import LoadingModal from '../../utils/LoadingModal';  
 
-// Registration screen component
-export default function RegistrationScreen({ navigation }) {
-    // State variables for form fields
+export default function RegistrationScreen({navigation}) {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Function to navigate to the login screen
     const onFooterLinkPress = () => {
         navigation.navigate('Login');
-    };
-  
-    // Function to handle user registration
-    const onRegisterPress = () => {
-        // Check if passwords match
+    }
+
+    const onRegisterPress = async () => {
         if (password !== confirmPassword) {
             alert("Passwords don't match.");
             return;
         }
-        // Get authentication and Firestore instances
-        const auth = getAuth();
-        const db = getFirestore();
     
-        // Create user with email and password
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Extract user object from userCredential
-                const user = userCredential.user;
-                const uid = user.uid;
-    
-                // Prepare user data
-                const data = {
-                    id: uid,
-                    email,
-                    fullName,
-                };
-                // Reference to the user document in Firestore
-                const usersRef = doc(db, "users", uid);
-                // Set user data in Firestore
-                setDoc(usersRef, data)
-                    .then(() => {
-                        // Navigate to home screen with user data
-                        navigation.navigate('Home', { user: data });
-                    })
-                    .catch((error) => {
-                        alert(error.message);
-                    });
-            })
-            .catch((error) => {
-                alert(error.message);
-            });
-    };
-    
+        setIsLoading(true);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const uid = userCredential.user.uid;
+            const data = {
+                id: uid,
+                email,
+                fullName,
+            };
+            
+            await setDoc(doc(db, 'users', uid), data);
+            navigation.navigate('Home', {user: data});
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
         <View style={styles.container}>
             <KeyboardAwareScrollView
@@ -115,7 +98,7 @@ export default function RegistrationScreen({ navigation }) {
                 {/* Register button */}
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => onRegisterPress()}>
+                    onPress={onRegisterPress}>
                     <Text style={styles.buttonTitle}>Create account</Text>
                 </TouchableOpacity>
                 {/* Footer link to navigate to the login screen */}
@@ -123,6 +106,7 @@ export default function RegistrationScreen({ navigation }) {
                     <Text style={styles.footerText}>Already got an account? <Text onPress={onFooterLinkPress} style={styles.footerLink}>Log in</Text></Text>
                 </View>
             </KeyboardAwareScrollView>
+            <LoadingModal isVisible={isLoading} />
         </View>
     );
 }

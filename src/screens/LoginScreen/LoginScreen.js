@@ -1,59 +1,43 @@
 import React, { useState } from 'react';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import styles from './styles';
-// Import Firebase authentication and Firestore modules
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import styles from './styles';
+import { auth, db } from '../../firebase/config';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import LoadingModal from '../../utils/LoadingModal';  
 
-// Login screen component
-export default function LoginScreen({ navigation }) {
-    // State variables for email and password fields
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+export default function LoginScreen({navigation}) {
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Function to navigate to the registration screen
     const onFooterLinkPress = () => {
         navigation.navigate('Registration');
-    };
+    }
 
-    // Function to handle login button press
-    const onLoginPress = () => {
-        // Get authentication and Firestore instances
-        const auth = getAuth();
-        const db = getFirestore();
-
-        // Sign in with email and password
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Extract user object from userCredential
-                const user = userCredential.user;
-                const uid = user.uid;
-
-                // Reference to the user document in Firestore
-                const userRef = doc(db, 'users', uid);
-                // Get user data from Firestore
-                getDoc(userRef)
-                    .then((response) => {
-                        // Check if user document exists
-                        if (!response.exists()) {
-                            alert("User does not exist anymore.");
-                            return;
-                        }
-                        // Extract user data from Firestore response
-                        const userData = response.data();
-                        // Navigate to home screen
-                        navigation.navigate('Home');
-                    })
-                    .catch((error) => {
-                        alert(error.message);
-                    });
-            })
-            .catch((error) => {
-                alert(error.message);
-            });
-    };
+    const onLoginPress = async () => {
+        setIsLoading(true);
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const uid = userCredential.user.uid;
+            
+            const userDoc = await getDoc(doc(db, 'users', uid));
+            
+            if (!userDoc.exists()) {
+                alert("User does not exist anymore.");
+                return;
+            }
+            const userData = userDoc.data();
+            await AsyncStorage.setItem('user', JSON.stringify(userData));  // Save user data
+            navigation.navigate('Home', {user: userData});
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -89,7 +73,7 @@ export default function LoginScreen({ navigation }) {
                 {/* Login button */}
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => onLoginPress()}>
+                    onPress={onLoginPress}>
                     <Text style={styles.buttonTitle}>Log in</Text>
                 </TouchableOpacity>
                 {/* Footer link to navigate to the registration screen */}
@@ -97,6 +81,7 @@ export default function LoginScreen({ navigation }) {
                     <Text style={styles.footerText}>Don't have an account? <Text onPress={onFooterLinkPress} style={styles.footerLink}>Sign up</Text></Text>
                 </View>
             </KeyboardAwareScrollView>
+            <LoadingModal isVisible={isLoading} />
         </View>
     );
 }

@@ -10,7 +10,6 @@ export default StyleSheet.create({
         height: 80,
         marginTop: 40,
         marginBottom: 20,
-        flex: 1,
         paddingTop: 10,
         paddingBottom: 10,
         paddingLeft: 30,
@@ -33,6 +32,15 @@ export default StyleSheet.create({
         backgroundColor: '#788eec',
         width: 80,
         alignItems: "center",
+        justifyContent: 'center',
+        marginRight: 5 // Add margin to the right to space out the buttons
+    },
+    logoutButton: {
+        height: 47,
+        borderRadius: 5,
+        backgroundColor: '#ff0000', // Red color for logout
+        width: 80,
+        alignItems: "center",
         justifyContent: 'center'
     },
     buttonText: {
@@ -53,4 +61,4 @@ export default StyleSheet.create({
         fontSize: 20,
         color: '#333333'
     }
-})
+});

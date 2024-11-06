@@ -1,65 +1,75 @@
-import React, { useEffect, useState } from 'react'
-import { FlatList, Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useState } from 'react';
+import { FlatList, Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import styles from './styles';
-import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { firebase } from '../../firebase/config'
+import { db, auth } from '../../firebase/config';
+import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import LoadingModal from '../../utils/LoadingModal';
 
-// Initialize Firestore
-const db = getFirestore();
+export default function HomeScreen(props) {
+    const [entityText, setEntityText] = useState('');
+    const [entities, setEntities] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-export default function HomeScreen( {extraData}) {
-    // console.log(extraData.id) // Makes sure userID is coming through props
-    const [entityText, setEntityText] = useState(''); // State to hold the text for the new entity
-    const [entities, setEntities] = useState([]); // State to hold the entities fetched from Firestore
-
-    // Reference to the 'entities' collection in Firestore
+    const navigation = useNavigation();
+    const userID = props.extraData.id;
     const entityRef = collection(db, 'entities');
-    const userID = extraData.id; // Assuming props.extraData contains user information
 
     useEffect(() => {
-        // Set up a query to fetch entities for the current user, ordered by 'createdAt' in descending order
-        const q = query(entityRef, where("authorID", "==", userID), orderBy('createdAt', 'desc'));
+        setLoading(true); 
+        const q = query(
+            entityRef,
+            where("authorID", "==", userID),
+            orderBy('createdAt', 'desc')
+        );
 
-        // Listen for real-time updates to the query
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const newEntities = [];
-            querySnapshot.forEach((doc) => {
-                // For each document in the query result, extract data and add it to the newEntities array
-                const entity = doc.data();
-                entity.id = doc.id; // Add the document ID to the entity object
-                newEntities.push(entity);
-            });
-            // Update the entities state with the newEntities array
-            setEntities(newEntities);
-        }, (error) => {
-            console.log(error);
-        });
-
-        // Cleanup function to unsubscribe from the snapshot listener when the component unmounts
-        return () => unsubscribe();
-    }, [userID]);
-
-    // Function to handle adding a new entity
-    const onAddButtonPress = () => {
-        if (entityText && entityText.length > 0) {
-            // Create a server-side timestamp for the 'createdAt' field
-            const timestamp = serverTimestamp();
-            // Data for the new entity
-            const data = {
-                text: entityText,
-                authorID: userID,
-                createdAt: timestamp,
-            };
-            // Add the new entity to the 'entities' collection in Firestore
-            addDoc(entityRef, data)
-                .then(() => {
-                    // Clear the input field and dismiss the keyboard after adding the entity
-                    setEntityText('');
-                    Keyboard.dismiss();
-                })
-                .catch((error) => {
-                    alert(error);
+        const unsubscribe = onSnapshot(q,
+            (querySnapshot) => {
+                const newEntities = [];
+                querySnapshot.forEach(doc => {
+                    const entity = doc.data();
+                    entity.id = doc.id;
+                    newEntities.push(entity);
                 });
+                setEntities(newEntities);
+                setLoading(false);
+            },
+            (error) => {
+                console.log(error);
+                setLoading(false);
+            }
+        );
+
+        return () => unsubscribe();
+    }, []);
+
+    const onAddButtonPress = async () => {
+        if (entityText && entityText.length > 0) {
+            setLoading(true); 
+            try {
+                const data = {
+                    text: entityText,
+                    authorID: userID,
+                    createdAt: serverTimestamp(),
+                };
+                await addDoc(entityRef, data);
+                setEntityText('');
+                Keyboard.dismiss();
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                setLoading(false); 
+            }
+        }
+    }
+
+    const onLogoutPress = async () => {
+        try {
+            await signOut(auth);
+            navigation.navigate('Login');
+        } catch (error) {
+            alert(error.message);
         }
     };
 
@@ -91,8 +101,11 @@ export default function HomeScreen( {extraData}) {
                 <TouchableOpacity style={styles.button} onPress={onAddButtonPress}>
                     <Text style={styles.buttonText}>Add</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.logoutButton} onPress={onLogoutPress}>
+                    <Text style={styles.buttonText}>Logout</Text>
+                </TouchableOpacity>
             </View>
-            { entities && (
+            {entities && (
                 <View style={styles.listContainer}>
                     <FlatList
                         data={entities}
@@ -102,6 +115,7 @@ export default function HomeScreen( {extraData}) {
                     />
                 </View>
             )}
+            <LoadingModal isVisible={loading} /> 
         </View>
-    )
+    );
 }
