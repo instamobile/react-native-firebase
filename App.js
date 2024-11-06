@@ -36,13 +36,29 @@ export default function App() {
         } finally {
           setLoading(false);
         }
+        try {
+          const userDoc = doc(db, 'users', user.uid);
+          const docSnapshot = await getDoc(userDoc);
+          if (docSnapshot.exists()) {
+            const userData = docSnapshot.data();
+            setUser(userData);
+          } else {
+            setUser(null); // User document doesn't exist
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        } finally {
+          setLoading(false);
+        }
       } else {
+        setUser(null); // No authenticated user
+        setLoading(false);
         setUser(null); // No authenticated user
         setLoading(false);
       }
     });
 
-   
+    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
@@ -56,7 +72,7 @@ export default function App() {
         { user ? (
           <Stack.Screen name="Home">
             {props => <HomeScreen {...props} extraData={user} />}
-          </Stack.Screen>
+            </Stack.Screen>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
@@ -67,3 +83,4 @@ export default function App() {
     </NavigationContainer>
   );
 }
+

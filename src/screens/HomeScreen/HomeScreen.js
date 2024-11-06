@@ -73,13 +73,18 @@ export default function HomeScreen(props) {
         }
     };
 
-    const renderEntity = ({item, index}) => (
-        <View style={styles.entityContainer}>
-            <Text style={styles.entityText}>
-                {index + 1}. {item.text}
-            </Text>
-        </View>
-    );
+    // Function to render each entity item in the FlatList
+    const renderEntity = ({ item, index }) => {
+        return (
+            <View style={styles.entityContainer}>
+                <Text style={styles.entityText}>
+                    {/* Display the entity text */}
+                    {index + 1}. {item.text}
+                </Text>
+            </View>
+        );
+    };
+
 
     return (
         <View style={styles.container}>

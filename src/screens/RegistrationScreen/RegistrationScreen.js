@@ -22,6 +22,8 @@ export default function RegistrationScreen({navigation}) {
         if (password !== confirmPassword) {
             alert("Passwords don't match.");
             return;
+            alert("Passwords don't match.");
+            return;
         }
     
         setIsLoading(true);
@@ -48,10 +50,12 @@ export default function RegistrationScreen({navigation}) {
             <KeyboardAwareScrollView
                 style={{ flex: 1, width: '100%' }}
                 keyboardShouldPersistTaps="always">
+                {/* App logo */}
                 <Image
                     style={styles.logo}
                     source={require('../../../assets/icon.png')}
                 />
+                {/* Full name input field */}
                 <TextInput
                     style={styles.input}
                     placeholder='Full Name'
@@ -61,6 +65,7 @@ export default function RegistrationScreen({navigation}) {
                     underlineColorAndroid="transparent"
                     autoCapitalize="none"
                 />
+                {/* Email input field */}
                 <TextInput
                     style={styles.input}
                     placeholder='E-mail'
@@ -70,6 +75,7 @@ export default function RegistrationScreen({navigation}) {
                     underlineColorAndroid="transparent"
                     autoCapitalize="none"
                 />
+                {/* Password input field */}
                 <TextInput
                     style={styles.input}
                     placeholderTextColor="#aaaaaa"
@@ -80,6 +86,7 @@ export default function RegistrationScreen({navigation}) {
                     underlineColorAndroid="transparent"
                     autoCapitalize="none"
                 />
+                {/* Confirm password input field */}
                 <TextInput
                     style={styles.input}
                     placeholderTextColor="#aaaaaa"
@@ -90,16 +97,18 @@ export default function RegistrationScreen({navigation}) {
                     underlineColorAndroid="transparent"
                     autoCapitalize="none"
                 />
+                {/* Register button */}
                 <TouchableOpacity
                     style={styles.button}
                     onPress={onRegisterPress}>
                     <Text style={styles.buttonTitle}>Create account</Text>
                 </TouchableOpacity>
+                {/* Footer link to navigate to the login screen */}
                 <View style={styles.footerView}>
                     <Text style={styles.footerText}>Already got an account? <Text onPress={onFooterLinkPress} style={styles.footerLink}>Log in</Text></Text>
                 </View>
             </KeyboardAwareScrollView>
             <LoadingModal isVisible={isLoading} />
         </View>
-    )
+    );
 }
