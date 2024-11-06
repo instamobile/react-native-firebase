@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import React, { useState } from 'react';
-import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from './styles';
-import { firebase } from '../../firebase/config'
+import { auth, db } from '../../firebase/config';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import LoadingModal from '../../utils/LoadingModal';  
 
 export default function LoginScreen({navigation}) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [isLoading, setIsLoading] = useState(false);
 
     const onFooterLinkPress = () => {
         navigation.navigate('Registration');

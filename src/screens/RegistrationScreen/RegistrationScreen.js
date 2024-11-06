@@ -22,8 +22,6 @@ export default function RegistrationScreen({navigation}) {
         if (password !== confirmPassword) {
             alert("Passwords don't match.");
             return;
-            alert("Passwords don't match.");
-            return;
         }
     
         setIsLoading(true);
