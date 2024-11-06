@@ -1,65 +1,85 @@
-import React, { useEffect, useState } from 'react'
-import { FlatList, Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useState } from 'react';
+import { FlatList, Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import styles from './styles';
-import { firebase } from '../../firebase/config'
+import { db, auth } from '../../firebase/config';
+import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import LoadingModal from '../../utils/LoadingModal';
 
 export default function HomeScreen(props) {
+    const [entityText, setEntityText] = useState('');
+    const [entities, setEntities] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const [entityText, setEntityText] = useState('')
-    const [entities, setEntities] = useState([])
-
-    const entityRef = firebase.firestore().collection('entities')
-    const userID = props.extraData.id
+    const navigation = useNavigation();
+    const userID = props.extraData.id;
+    const entityRef = collection(db, 'entities');
 
     useEffect(() => {
-        entityRef
-            .where("authorID", "==", userID)
-            .orderBy('createdAt', 'desc')
-            .onSnapshot(
-                querySnapshot => {
-                    const newEntities = []
-                    querySnapshot.forEach(doc => {
-                        const entity = doc.data()
-                        entity.id = doc.id
-                        newEntities.push(entity)
-                    });
-                    setEntities(newEntities)
-                },
-                error => {
-                    console.log(error)
-                }
-            )
-    }, [])
+        setLoading(true); 
+        const q = query(
+            entityRef,
+            where("authorID", "==", userID),
+            orderBy('createdAt', 'desc')
+        );
 
-    const onAddButtonPress = () => {
-        if (entityText && entityText.length > 0) {
-            const timestamp = firebase.firestore.FieldValue.serverTimestamp();
-            const data = {
-                text: entityText,
-                authorID: userID,
-                createdAt: timestamp,
-            };
-            entityRef
-                .add(data)
-                .then(_doc => {
-                    setEntityText('')
-                    Keyboard.dismiss()
-                })
-                .catch((error) => {
-                    alert(error)
+        const unsubscribe = onSnapshot(q,
+            (querySnapshot) => {
+                const newEntities = [];
+                querySnapshot.forEach(doc => {
+                    const entity = doc.data();
+                    entity.id = doc.id;
+                    newEntities.push(entity);
                 });
+                setEntities(newEntities);
+                setLoading(false);
+            },
+            (error) => {
+                console.log(error);
+                setLoading(false);
+            }
+        );
+
+        return () => unsubscribe();
+    }, []);
+
+    const onAddButtonPress = async () => {
+        if (entityText && entityText.length > 0) {
+            setLoading(true); 
+            try {
+                const data = {
+                    text: entityText,
+                    authorID: userID,
+                    createdAt: serverTimestamp(),
+                };
+                await addDoc(entityRef, data);
+                setEntityText('');
+                Keyboard.dismiss();
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                setLoading(false); 
+            }
         }
     }
 
-    const renderEntity = ({item, index}) => {
-        return (
-            <View style={styles.entityContainer}>
-                <Text style={styles.entityText}>
-                    {index}. {item.text}
-                </Text>
-            </View>
-        )
-    }
+    const onLogoutPress = async () => {
+        try {
+            await signOut(auth);
+            navigation.navigate('Login');
+        } catch (error) {
+            alert(error.message);
+        }
+    };
+
+    const renderEntity = ({item, index}) => (
+        <View style={styles.entityContainer}>
+            <Text style={styles.entityText}>
+                {index + 1}. {item.text}
+            </Text>
+        </View>
+    );
 
     return (
         <View style={styles.container}>
@@ -76,8 +96,11 @@ export default function HomeScreen(props) {
                 <TouchableOpacity style={styles.button} onPress={onAddButtonPress}>
                     <Text style={styles.buttonText}>Add</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.logoutButton} onPress={onLogoutPress}>
+                    <Text style={styles.buttonText}>Logout</Text>
+                </TouchableOpacity>
             </View>
-            { entities && (
+            {entities && (
                 <View style={styles.listContainer}>
                     <FlatList
                         data={entities}
@@ -87,6 +110,7 @@ export default function HomeScreen(props) {
                     />
                 </View>
             )}
+            <LoadingModal isVisible={loading} /> 
         </View>
-    )
+    );
 }

@@ -1,49 +1,46 @@
-import React, { useState } from 'react'
-import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React, { useState } from 'react';
+import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import styles from './styles';
-import { firebase } from '../../firebase/config'
+import { auth, db } from '../../firebase/config';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import LoadingModal from '../../utils/LoadingModal';  
 
 export default function RegistrationScreen({navigation}) {
-    const [fullName, setFullName] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const onFooterLinkPress = () => {
-        navigation.navigate('Login')
+        navigation.navigate('Login');
     }
 
-    const onRegisterPress = () => {
+    const onRegisterPress = async () => {
         if (password !== confirmPassword) {
-            alert("Passwords don't match.")
-            return
+            alert("Passwords don't match.");
+            return;
         }
     
-        firebase
-            .auth()
-            .createUserWithEmailAndPassword(email, password)
-            .then((response) => {
-                const uid = response.user.uid
-                const data = {
-                    id: uid,
-                    email,
-                    fullName,
-                };
-                const usersRef = firebase.firestore().collection('users')
-                usersRef
-                    .doc(uid)
-                    .set(data)
-                    .then(() => {
-                        navigation.navigate('Home', {user: data})
-                    })
-                    .catch((error) => {
-                        alert(error)
-                    });
-            })
-            .catch((error) => {
-                alert(error)
-        });
+        setIsLoading(true);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const uid = userCredential.user.uid;
+            const data = {
+                id: uid,
+                email,
+                fullName,
+            };
+            
+            await setDoc(doc(db, 'users', uid), data);
+            navigation.navigate('Home', {user: data});
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -95,13 +92,14 @@ export default function RegistrationScreen({navigation}) {
                 />
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => onRegisterPress()}>
+                    onPress={onRegisterPress}>
                     <Text style={styles.buttonTitle}>Create account</Text>
                 </TouchableOpacity>
                 <View style={styles.footerView}>
                     <Text style={styles.footerText}>Already got an account? <Text onPress={onFooterLinkPress} style={styles.footerLink}>Log in</Text></Text>
                 </View>
             </KeyboardAwareScrollView>
+            <LoadingModal isVisible={isLoading} />
         </View>
     )
 }
